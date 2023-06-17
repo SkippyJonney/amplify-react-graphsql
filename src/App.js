@@ -4,15 +4,14 @@ import './App.css';
 import "@aws-amplify/ui-react/styles.css"
 import { API, Storage } from "aws-amplify";
 import {
-  withAuthenticator,
   Button,
+  Flex,
   Heading,
   Image,
-  View,
-  Card,
-  Flex,
   Text,
   TextField,
+  View,
+  withAuthenticator,
 } from "@aws-amplify/ui-react";
 import { listNotes } from "./graphql/queries";
 import {
@@ -32,7 +31,7 @@ const App = ({ signOut }) => {
     const notesFromAPI = apiData.data.listNotes.items;
     await Promise.all(
       notesFromAPI.map(async (note) => {
-        if ( note.image ) {
+        if (note.image) {
           const url = await Storage.get(note.name);
           note.image = url;
         }
@@ -51,10 +50,10 @@ const App = ({ signOut }) => {
       description: form.get("description"),
       image: image.name,
     };
-    if(!!data.image) await Storage.put(data.name, image);
+    if (!!data.image) await Storage.put(data.name, image);
     await API.graphql({
       query: createNoteMutation,
-      variables: {input:data},
+      variables: { input: data },
     });
     fetchNotes();
     event.target.reset();
@@ -66,7 +65,7 @@ const App = ({ signOut }) => {
     await Storage.remove(name);
     await API.graphql({
       query: deleteNoteMutation,
-      variables: { input: {id}},
+      variables: { input: { id } },
     });
   }
 
@@ -94,6 +93,12 @@ const App = ({ signOut }) => {
             variation="quiet"
             required
           />
+          <View
+            name="image"
+            as="input"
+            type="file"
+            style={{alignSelf: "end"}}
+          />
           <Button type="submit" variation="primary">
             Create Note
           </Button>
@@ -101,33 +106,30 @@ const App = ({ signOut }) => {
       </View>
       <Heading level={2}>Current Notes</Heading>
       <View margin="3rem 0">
-        {notes.map((note) => (
-          <Flex
-            key={note.id || note.name}
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Text as="span">{note.description}</Text>
-            {note.image && (
-              <Image
-                src={note.image}
-                alt={'visual aid for ${notes.name}'}
-                style={{ width: 400 }}
-              />
-            )}
-            <Button variation="link" onClick={() => deleteNote(note)}>
-              Delete Note
-            </Button>
-          </Flex>
-        ))}
-      </View>
-      <View
-        name="image"
-        as="input"
-        type="file"
-        style={{alignSelf: "end"}}
+      {notes.map((note) => (
+  <Flex
+    key={note.id || note.name}
+    direction="row"
+    justifyContent="center"
+    alignItems="center"
+  >
+    <Text as="strong" fontWeight={700}>
+      {note.name}
+    </Text>
+    <Text as="span">{note.description}</Text>
+    {note.image && (
+      <Image
+        src={note.image}
+        alt={`visual aid for ${notes.name}`}
+        style={{ width: 400 }}
       />
+    )}
+    <Button variation="link" onClick={() => deleteNote(note)}>
+      Delete note
+    </Button>
+  </Flex>
+))}
+      </View>
       <Button onClick={signOut}>Say Goodby!</Button>
     </View>
   );
